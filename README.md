@@ -36,18 +36,20 @@ Kotlin + Spring Boot 3.3 + Spring Data JPA + MySQL 8 + springdoc-openapi（Swagg
 | POST | /api/login | 登录，body: `{username, password}` → `{token, user}` | 公开 |
 | POST | /api/logout | 退出登录 | 登录 |
 | GET | /api/me | 当前登录用户信息 | 登录 |
-| GET | /api/users | 用户列表，可选参数 `role`、`keyword` | 管理员 |
-| POST | /api/users/save | 新增/修改用户（传 `user_id` 为修改；新增密码不填默认 123456） | 管理员 |
-| POST | /api/users/toggle | 启用/禁用，body: `{user_id, status?}`，status 不传则取反 | 管理员 |
-| POST | /api/users/delete | 删除用户，body: `{user_id}` | 管理员 |
+| GET | /api/users | 用户列表，可选筛选参数 `role`、`status`、`keyword` | 管理员 |
+| POST | /api/users/save | 新增/修改用户（传 `user_id` 为修改；新增密码不填默认 123456），返回保存后的 user | 管理员 |
+| POST | /api/users/toggle | 启用/禁用，body: `{user_id}`，状态取反，返回切换后的 user | 管理员 |
+| POST | /api/users/delete | 删除用户，body: `{user_id}`，返回 `true` | 管理员 |
 | GET | /api/labs | 实验室列表 | 登录 |
 | POST | /api/labs/save | 新增/修改实验室，body: `{lab_id?, lab_name, location?}` | 管理员 |
-| POST | /api/labs/delete | 删除实验室，body: `{lab_id}` | 管理员 |
+| POST | /api/labs/delete | 删除实验室，body: `{lab_id}`，返回 `true` | 管理员 |
 | GET | /api/types | 设备类别列表 | 登录 |
 | POST | /api/types/save | 新增/修改类别，body: `{type_id?, type_name}` | 管理员 |
-| POST | /api/types/delete | 删除类别，body: `{type_id}` | 管理员 |
+| POST | /api/types/delete | 删除类别，body: `{type_id}`，返回 `true` | 管理员 |
 
-角色值：0学生，1教师，2系统管理员，3维修人员
+角色值：0学生，1教师，2系统管理员，3维修人员；用户状态 status：0禁用，1启用（与前端 C 契约一致）
+
+> 说明：user 对象不返回 password 字段（连哈希值也不下发，这是安全底线，前端页面用不到该字段）
 
 ## B 开发指引（后端基础框架已就绪，直接用）
 
@@ -61,5 +63,5 @@ Kotlin + Spring Boot 3.3 + Spring Data JPA + MySQL 8 + springdoc-openapi（Swagg
 ## 已知事项
 
 - token 存内存，服务重启需重新登录（课程项目够用）
-- user 表 status 字段是 A 补充的，B 建库后需执行 `sql/user_add_status.sql`
+- user 表 status 字段是 A 补充的（0禁用，1启用，与前端契约一致），B 建库后需执行 `sql/user_add_status.sql`
 - 设备借用数量扣减/恢复已由 B 的 SQL 触发器保证，B 写业务代码时注意不要在 Java 里重复扣减

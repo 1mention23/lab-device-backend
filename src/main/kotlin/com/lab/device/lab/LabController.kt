@@ -55,13 +55,13 @@ class LabController(
     @Operation(summary = "删除实验室（管理员；名下有设备时禁止删除）")
     @RequireRole(2)
     @PostMapping("/delete")
-    fun delete(@RequestBody req: DeleteRequest): ApiResponse<Any> {
+    fun delete(@RequestBody req: DeleteRequest): ApiResponse<Boolean> {
         if (!labRepository.existsById(req.labId)) throw BizException("实验室不存在")
         try {
             labRepository.deleteById(req.labId)
         } catch (e: DataIntegrityViolationException) {
             throw BizException("该实验室下存在设备，不能删除")
         }
-        return ApiResponse.ok()
+        return ApiResponse.ok(true)
     }
 }

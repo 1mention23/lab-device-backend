@@ -36,18 +36,20 @@ class UserController(
     data class ToggleRequest(val userId: Int = 0, val status: Int? = null)
     data class DeleteRequest(val userId: Int = 0)
 
-    @Operation(summary = "查询用户列表，可按角色/用户名关键字筛选")
+    @Operation(summary = "查询用户列表，可按角色/状态/用户名关键字筛选")
     @GetMapping
     fun list(
         @RequestParam(required = false) role: Int?,
-        @RequestParam(required = false) keyword: String?
+        @RequestParam(required = false) keyword: String?,
+        @RequestParam(required = false) status: Int?
     ): ApiResponse<List<UserVo>> {
-        val users = when {
-            role != null -> userRepository.findByRole(role)
-            !keyword.isNullOrBlank() -> userRepository.findByUsernameContaining(keyword)
-            else -> userRepository.findAll()
-        }
-        return ApiResponse.ok(users.map { it.toVo() })
+        return ApiResponse.ok(
+            userRepository.findAll()
+                .filter { role == null || it.role == role }
+                .filter { status == null || it.status == status }
+                .filter { keyword.isNullOrBlank() || it.username.contains(keyword) }
+                .map { it.toVo() }
+        )
     }
 
     @Operation(summary = "新增或修改用户（传 user_id 为修改）")
@@ -86,17 +88,17 @@ class UserController(
         val session = request.getAttribute(TokenService.REQUEST_ATTR) as TokenService.Session
         if (req.userId == session.userId) throw BizException("不能禁用当前登录账号")
         val user = userRepository.findByIdOrNull(req.userId) ?: throw BizException("用户不存在")
-        user.status = req.status ?: if (user.status == 0) 1 else 0
+        user.status = req.status ?: if (user.status == 1) 0 else 1   // 0禁用/1启用，不传则取反
         return ApiResponse.ok(userRepository.save(user).toVo())
     }
 
     @Operation(summary = "删除用户（不能删除自己）")
     @PostMapping("/delete")
-    fun delete(@RequestBody req: DeleteRequest, request: HttpServletRequest): ApiResponse<Any> {
+    fun delete(@RequestBody req: DeleteRequest, request: HttpServletRequest): ApiResponse<Boolean> {
         val session = request.getAttribute(TokenService.REQUEST_ATTR) as TokenService.Session
         if (req.userId == session.userId) throw BizException("不能删除当前登录账号")
         if (!userRepository.existsById(req.userId)) throw BizException("用户不存在")
         userRepository.deleteById(req.userId)
-        return ApiResponse.ok()
+        return ApiResponse.ok(true)
     }
 }

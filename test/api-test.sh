@@ -57,6 +57,9 @@ check "用户列表" "$R" '"username":"student01"'
 R=$(curl -s "$BASE/users?role=3" -H "Authorization: Bearer $ADMIN")
 check "按角色筛选(role=3只有维修)" "$R" '"username":"repair01"'
 
+R=$(curl -s "$BASE/users?status=1" -H "Authorization: Bearer $ADMIN")
+check "按状态筛选(status=1启用)" "$R" '"username":"admin01"'
+
 R=$(curl -s "$BASE/users?keyword=teacher" -H "Authorization: Bearer $ADMIN")
 check "按关键字筛选" "$R" '"username":"teacher01"'
 
@@ -74,13 +77,13 @@ R=$(curl -s -X POST $BASE/login -H 'Content-Type: application/json' -d '{"userna
 check "新用户默认密码可登录" "$R" '"code":0'
 
 R=$(curl -s -X POST $BASE/users/toggle -H "Authorization: Bearer $ADMIN" -H 'Content-Type: application/json' -d "{\"user_id\":$TID}")
-check "禁用用户" "$R" '"status":1'
+check "禁用用户(status=0禁用)" "$R" '"status":0'
 
 R=$(curl -s -X POST $BASE/login -H 'Content-Type: application/json' -d '{"username":"test_student","password":"123456"}')
 check "禁用后登录被拒" "$R" '已被禁用'
 
 R=$(curl -s -X POST $BASE/users/toggle -H "Authorization: Bearer $ADMIN" -H 'Content-Type: application/json' -d "{\"user_id\":$TID}")
-check "重新启用" "$R" '"status":0'
+check "重新启用(status=1启用)" "$R" '"status":1'
 
 R=$(curl -s $BASE/me -H "Authorization: Bearer $ADMIN")
 AID=$(echo "$R" | sed -n 's/.*"user_id":\([0-9]*\).*/\1/p')
