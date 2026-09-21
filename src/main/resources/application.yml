@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: lab-device-backend
+  datasource:
+    # 数据库由 B 同学用 lab_device_manage.sql 创建
+    url: jdbc:mysql://localhost:3306/lab_device_manage?useUnicode=true&characterEncoding=utf8mb4&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: 123456   # TODO: 改成你本地 MySQL 的密码
+  jpa:
+    # 表结构由 B 的 SQL 脚本管理，禁止 JPA 自动改表
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+  jackson:
+    # 与前端约定：字段一律下划线命名（snake_case），与数据字典一致
+    property-naming-strategy: SNAKE_CASE
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    org.hibernate.SQL: warn
