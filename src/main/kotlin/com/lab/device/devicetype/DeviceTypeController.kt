@@ -53,13 +53,13 @@ class DeviceTypeController(
     @Operation(summary = "删除设备类别（管理员；类别下有设备时禁止删除）")
     @RequireRole(2)
     @PostMapping("/delete")
-    fun delete(@RequestBody req: DeleteRequest): ApiResponse<Any> {
+    fun delete(@RequestBody req: DeleteRequest): ApiResponse<Boolean> {
         if (!deviceTypeRepository.existsById(req.typeId)) throw BizException("类别不存在")
         try {
             deviceTypeRepository.deleteById(req.typeId)
         } catch (e: DataIntegrityViolationException) {
             throw BizException("该类别下存在设备，不能删除")
         }
-        return ApiResponse.ok()
+        return ApiResponse.ok(true)
     }
 }

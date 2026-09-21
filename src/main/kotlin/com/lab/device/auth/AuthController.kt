@@ -38,7 +38,7 @@ class AuthController(
         if (user.password != sha256Hex(req.password)) {
             throw BizException("用户名或密码错误")
         }
-        if (user.status != 0) {
+        if (user.status != 1) {   // status：0禁用，1启用（前端契约）
             throw BizException("账号已被禁用，请联系管理员")
         }
         val token = tokenService.createSession(user.userId!!, user.username, user.role)

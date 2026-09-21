@@ -25,9 +25,9 @@ class User(
     @Column(name = "phone", length = 20)
     var phone: String? = null,
 
-    /** 0正常，1禁用。该字段需 B 执行 sql/user_add_status.sql 补充 */
+    /** 0禁用，1启用（与前端契约一致）。该字段需 B 执行 sql/user_add_status.sql 补充 */
     @Column(name = "status", nullable = false)
-    var status: Int = 0,
+    var status: Int = 1,
 
     @Column(name = "create_time", insertable = false, updatable = false)
     var createTime: LocalDateTime? = null
